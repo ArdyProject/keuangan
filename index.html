@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Keuangan Rahasia</title>
   <style>
-    /* Reset & Theme Termux Base Style (Pure CSS) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background-color: #0d1117;
@@ -13,8 +12,14 @@
       font-family: 'Courier New', Courier, monospace;
       padding: 15px;
     }
-    a, .btn-link { color: #58a6ff; text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; }
-    
+    a, .btn-link {
+      color: #58a6ff;
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
     .header { text-align: center; margin-bottom: 20px; }
     .card {
       background: #161b22;
@@ -23,14 +28,17 @@
       padding: 15px;
       margin-bottom: 15px;
     }
-    
-    /* Layout Grid Murni */
     .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-    @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
-
-    /* Form Input */
+    @media (min-width: 768px) {
+      .grid { grid-template-columns: 1fr 2fr; }
+    }
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; margin-bottom: 4px; color: #8b949e; font-size: 12px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      color: #8b949e;
+      font-size: 12px;
+    }
     .form-control {
       width: 100%;
       padding: 8px;
@@ -51,36 +59,55 @@
       font-family: inherit;
     }
     .btn:hover { background: #2ea043; color: #fff; }
-
-    /* Tabel Status */
+    .btn:disabled { opacity: .6; cursor: wait; }
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th, td { border-bottom: 1px solid #30363d; padding: 8px; font-size: 13px; }
     th { color: #8b949e; }
-    
-    /* Utility */
-    .badge { padding: 2px 6px; border-radius: 4px; border: 1px solid #30363d; background: #000; display: inline-block; }
+    .badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #30363d;
+      background: #000;
+      display: inline-block;
+    }
     .text-in { color: #3fb950; font-weight: bold; }
     .text-out { color: #f85149; font-weight: bold; }
     .text-info { color: #58a6ff; }
-    
-    /* Sidebar Converter Offcanvas */
     .sidebar {
-      position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%;
-      background: #000; border-left: 2px solid #2ea043; z-index: 1000; transition: right 0.3s ease;
-      padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); overflow-y: auto;
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      max-width: 400px;
+      height: 100%;
+      background: #000;
+      border-left: 2px solid #2ea043;
+      z-index: 1000;
+      transition: right 0.3s ease;
+      padding: 20px;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+      overflow-y: auto;
     }
     .sidebar.open { right: 0; }
     .fab {
-      position: fixed; bottom: 20px; right: 20px; background: #000; color: #3fb950;
-      border: 1px solid #3fb950; padding: 12px 20px; border-radius: 30px; font-weight: bold;
-      cursor: pointer; box-shadow: 0 4px 10px rgba(0,255,0,0.2); font-family: inherit; z-index: 999;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #000;
+      color: #3fb950;
+      border: 1px solid #3fb950;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,255,0,0.2);
+      font-family: inherit;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
-
-  <!-- Floating Button -->
   <button class="fab" onclick="toggleSidebar(true)">>_ CONVERTER</button>
 
   <div class="header">
@@ -92,34 +119,32 @@
   </div>
 
   <div class="grid">
-    <!-- Form Input -->
     <div class="card">
       <div style="color:#3fb950; margin-bottom: 10px;">$ Tambah_Transaksi</div>
       <form id="formTransaksi" onsubmit="tambahData(event)">
         <div class="form-group">
-          <label>Tanggal</label>
+          <label for="tgl">Tanggal</label>
           <input type="date" id="tgl" class="form-control" required>
         </div>
         <div class="form-group">
-          <label>Jenis Transaksi</label>
+          <label for="jenis">Jenis Transaksi</label>
           <select id="jenis" class="form-control" required>
             <option value="+">[+] Pemasukan</option>
             <option value="-">[-] Pengeluaran</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Nominal (Rp)</label>
-          <input type="number" id="nominal" class="form-control" placeholder="150000" required>
+          <label for="nominal">Nominal (Rp)</label>
+          <input type="number" id="nominal" class="form-control" placeholder="150000" min="1" step="1" required>
         </div>
         <div class="form-group">
-          <label>Keterangan</label>
+          <label for="keterangan">Keterangan</label>
           <input type="text" id="keterangan" class="form-control" placeholder="Gaji / Makan" required autocomplete="off">
         </div>
         <button type="submit" id="btnSubmit" class="btn">Simpan ke Sheets</button>
       </form>
     </div>
 
-    <!-- Tabel Log -->
     <div class="card">
       <div style="color:#3fb950; margin-bottom: 10px;">$ Log_Keuangan</div>
       <div class="table-container">
@@ -142,22 +167,22 @@
     </div>
   </div>
 
-  <!-- Sidebar Converter Converter -->
   <div id="sidebar" class="sidebar">
     <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
       <span style="color:#3fb950;">~ $ /converter.sh</span>
       <button class="btn-link" onclick="toggleSidebar(false)">[X] Tutup</button>
     </div>
     <div style="font-size: 12px; color: #58a6ff; margin-bottom: 15px;">
-      a=0 b=1 c=2 d=3 e=4 f=5 g=6 h=7 i=8 j=9<br>Rule: 000 = A³, 1111 = B⁴
+      a=0 b=1 c=2 d=3 e=4 f=5 g=6 h=7 i=8 j=9<br>
+      Rule: 000 = A³, 1111 = B⁴
     </div>
     <div class="form-group">
-      <label>Nominal Angka (Rp):</label>
+      <label for="cAngka">Nominal Angka (Rp):</label>
       <input type="number" id="cAngka" class="form-control" placeholder="150000">
       <button class="btn-link" onclick="cEnkrip()" style="margin-top: 5px;">[Enter] Enkripsi</button>
     </div>
     <div class="form-group" style="margin-top: 20px;">
-      <label>Kode Rahasia:</label>
+      <label for="cKode">Kode Rahasia:</label>
       <input type="text" id="cKode" class="form-control" placeholder="B.F⁵">
       <button class="btn-link" onclick="cDekrip()" style="margin-top: 5px;">[Enter] Dekripsi</button>
     </div>
@@ -168,28 +193,29 @@
   </div>
 
   <script>
-    // MASUKKAN URL GOOGLE APPS SCRIPT KAMU DI SINI
-    const API_URL = "https://script.google.com/macros/s/AKfycby-RypZ9AmDRy_X9Sti3RWVikAnrXPjxfREpW6HZe16bw5c7h-VdyeRSM7ctjDC9lrS-w/exec";
+    // Ganti dengan URL deployment Apps Script yang berakhiran /exec.
+    const API_URL = 'https://script.google.com/macros/s/AKfycbylbO37DGjTsk0GvKdXbAEgwczgO4f7_GYtEs3aLRim9BMEiioYz27VWzYkcErvZdU28w/exec';
 
     const kodeAngka = {'0':'a','1':'b','2':'c','3':'d','4':'e','5':'f','6':'g','7':'h','8':'i','9':'j'};
     const kodeHuruf = {'a':'0','b':'1','c':'2','d':'3','e':'4','f':'5','g':'6','h':'7','i':'8','j':'9'};
     const superToNum = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
     const numToSuper = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 
-    document.getElementById('tgl').valueAsDate = new Date();
+    document.getElementById('tgl').value = new Date().toISOString().slice(0, 10);
 
     function enkripsiAngka(angka) {
-      let str = angka.toString().replace(/[^0-9]/g, '');
+      let str = String(angka ?? '').replace(/[^0-9]/g, '');
       if (!str) return '0';
-      let kode = str.split('').map(d => kodeAngka[d]).join('');
-      let hasil = ''; let count = 1;
-      for(let i=0; i<kode.length; i++){
-        if(kode[i] === kode[i+1]){ count++; }
-        else {
+      const kode = str.split('').map(d => kodeAngka[d]).join('');
+      let hasil = '';
+      let count = 1;
+      for (let i = 0; i < kode.length; i++) {
+        if (kode[i] === kode[i + 1]) {
+          count++;
+        } else {
           hasil += kode[i].toUpperCase();
-          if(count > 1) {
-            let cStr = count.toString();
-            for(let j=0; j<cStr.length; j++) hasil += numToSuper[cStr[j]];
+          if (count > 1) {
+            for (const digit of String(count)) hasil += numToSuper[digit];
           }
           count = 1;
         }
@@ -198,15 +224,15 @@
     }
 
     function dekripsiKode(kode) {
-      kode = kode.toLowerCase().replace(/\./g, '');
+      kode = String(kode ?? '').toLowerCase().replace(/\./g, '');
       let angka = '';
-      for(let i=0; i<kode.length; i++){
-        let huruf = kode[i];
-        if(!kodeHuruf[huruf]) continue;
+      for (let i = 0; i < kode.length; i++) {
+        const huruf = kode[i];
+        if (kodeHuruf[huruf] === undefined) continue;
         let jumlah = 1;
-        let nextChar = kode[i+1];
-        if(superToNum[nextChar] !== undefined){
-          jumlah = parseInt(superToNum[nextChar]);
+        const nextChar = kode[i + 1];
+        if (superToNum[nextChar] !== undefined) {
+          jumlah = parseInt(superToNum[nextChar], 10);
           i++;
         }
         angka += kodeHuruf[huruf].repeat(jumlah);
@@ -214,88 +240,177 @@
       return angka;
     }
 
-    async function loadData() {
+    function normalizeJenisClient(value) {
+      const jenis = String(value ?? '').trim().toLowerCase();
+      if (['+', 'pemasukan', 'masuk', 'income', 'in', 'debit'].includes(jenis)) return '+';
+      if (['-', 'pengeluaran', 'keluar', 'expense', 'out', 'kredit'].includes(jenis)) return '-';
+      return '';
+    }
+
+    function parseNominalClient(value) {
+      if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+      let text = String(value ?? '').replace(/Rp/gi, '').replace(/\s/g, '');
+      if (!text) return 0;
+      if (text.includes(',')) {
+        text = text.replace(/\./g, '').replace(',', '.');
+      } else {
+        text = text.replace(/\./g, '');
+      }
+      const number = Number(text.replace(/[^0-9.-]/g, ''));
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    async function apiRequest(options = {}) {
+      const response = await fetch(API_URL, {
+        method: options.method || 'GET',
+        // Jangan menambahkan Content-Type application/json agar tidak memicu
+        // preflight CORS pada hosting tertentu.
+        body: options.body ? JSON.stringify(options.body) : undefined,
+        cache: 'no-store'
+      });
+
+      const text = await response.text();
+      let result;
       try {
-        let res = await fetch(API_URL);
-        let data = await res.json();
-        
-        // Sort tanggal ascending untuk kalkulasi saldo
-        data.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+        result = JSON.parse(text);
+      } catch (_) {
+        throw new Error('API tidak mengembalikan JSON. Pastikan URL memakai /exec dan akses deployment adalah Anyone.');
+      }
+
+      if (!response.ok || (result && result.status === 'error')) {
+        throw new Error(result.message || `HTTP ${response.status}`);
+      }
+      return result;
+    }
+
+    async function loadData() {
+      const body = document.getElementById('tabelBody');
+      try {
+        const result = await apiRequest();
+        if (!Array.isArray(result)) {
+          throw new Error(result.message || 'Format data API tidak valid.');
+        }
+
+        result.sort((a, b) => {
+          const dateCompare = String(a.tanggal ?? '').localeCompare(String(b.tanggal ?? ''));
+          return dateCompare || String(a.id ?? '').localeCompare(String(b.id ?? ''));
+        });
 
         let saldo = 0;
-        let html = '';
-        
-        // Hitung Saldo & Susun Tampilan
-        let dataRender = data.map(item => {
-          let nom = parseInt(item.nominal) || 0;
-          if(item.jenis === '+') saldo += nom;
-          else saldo -= nom;
-          return { ...item, saldoBerjalan: saldo };
-        }).reverse(); // Balik agar transaksi baru di atas
+        const dataRender = result.map(item => {
+          const jenis = normalizeJenisClient(item.jenis);
+          const nominal = parseNominalClient(item.nominal);
 
-        document.getElementById('totalSaldo').innerText = enkripsiAngka(Math.abs(saldo)) + (saldo < 0 ? " (MINUS)" : "");
+          // Hanya '-' yang mengurangi saldo.
+          if (jenis === '+') saldo += nominal;
+          if (jenis === '-') saldo -= nominal;
 
-        if(dataRender.length === 0) {
-          html = '<tr><td colspan="6" style="text-align: center; color: #8b949e;">Belum ada data.</td></tr>';
-        } else {
-          dataRender.forEach(item => {
-            html += `<tr>
-              <td style="color:#8b949e">${item.tanggal.substring(2)}</td>
-              <td>${item.keterangan}</td>
-              <td class="${item.jenis === '+' ? 'text-in' : 'text-out'}">${item.jenis === '+' ? '[IN]' : '[OUT]'}</td>
-              <td><span class="badge ${item.jenis === '+' ? 'text-in' : 'text-out'}">${enkripsiAngka(item.nominal)}</span></td>
-              <td><span class="badge text-info">${enkripsiAngka(Math.abs(item.saldoBerjalan))}</span></td>
-              <td><button class="btn-link" style="color:#f85149" onclick="hapusData('${item.id}')">Del</button></td>
-            </tr>`;
-          });
+          return { ...item, jenis, nominal, saldoBerjalan: saldo };
+        }).reverse();
+
+        document.getElementById('totalSaldo').innerText =
+          enkripsiAngka(Math.abs(saldo)) + (saldo < 0 ? ' (MINUS)' : '');
+
+        if (!dataRender.length) {
+          body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8b949e">Belum ada data.</td></tr>';
+          return;
         }
-        document.getElementById('tabelBody').innerHTML = html;
-      } catch(e) {
-        document.getElementById('tabelBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f85149;">Gagal memuat data. Cek API URL.</td></tr>';
+
+        body.innerHTML = dataRender.map(item => `
+          <tr>
+            <td style="color:#8b949e">${escapeHtml(String(item.tanggal ?? '').substring(2))}</td>
+            <td>${escapeHtml(item.keterangan)}</td>
+            <td class="${item.jenis === '+' ? 'text-in' : 'text-out'}">
+              ${item.jenis === '+' ? '[IN]' : item.jenis === '-' ? '[OUT]' : '[?]'}
+            </td>
+            <td><span class="badge ${item.jenis === '+' ? 'text-in' : 'text-out'}">${enkripsiAngka(item.nominal)}</span></td>
+            <td><span class="badge text-info">${enkripsiAngka(Math.abs(item.saldoBerjalan))}</span></td>
+            <td>
+              <button class="btn-link" style="color:#f85149" data-id="${escapeHtml(item.id)}">Del</button>
+            </td>
+          </tr>
+        `).join('');
+
+        body.querySelectorAll('button[data-id]').forEach(button => {
+          button.addEventListener('click', () => hapusData(button.dataset.id));
+        });
+      } catch (error) {
+        console.error('loadData error:', error);
+        body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f85149">${escapeHtml(error.message)}</td></tr>`;
       }
     }
 
-    async function tambahData(e) {
-      e.preventDefault();
-      let btn = document.getElementById('btnSubmit');
-      btn.innerText = 'Mengirim...'; btn.disabled = true;
+    async function tambahData(event) {
+      event.preventDefault();
+      const button = document.getElementById('btnSubmit');
+      button.innerText = 'Mengirim...';
+      button.disabled = true;
 
-      let payload = {
-        action: 'add',
-        tanggal: document.getElementById('tgl').value,
-        jenis: document.getElementById('jenis').value,
-        nominal: document.getElementById('nominal').value,
-        keterangan: document.getElementById('keterangan').value
-      };
+      try {
+        await apiRequest({
+          method: 'POST',
+          body: {
+            action: 'add',
+            tanggal: document.getElementById('tgl').value,
+            jenis: normalizeJenisClient(document.getElementById('jenis').value),
+            nominal: document.getElementById('nominal').value,
+            keterangan: document.getElementById('keterangan').value
+          }
+        });
 
-      await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-      document.getElementById('nominal').value = '';
-      document.getElementById('keterangan').value = '';
-      btn.innerText = 'Simpan ke Sheets'; btn.disabled = false;
-      loadData();
+        document.getElementById('nominal').value = '';
+        document.getElementById('keterangan').value = '';
+        await loadData();
+      } catch (error) {
+        console.error('tambahData error:', error);
+        alert('Gagal menyimpan: ' + error.message);
+      } finally {
+        button.innerText = 'Simpan ke Sheets';
+        button.disabled = false;
+      }
     }
 
     async function hapusData(id) {
-      if(!confirm('Hapus transaksi ini?')) return;
-      await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
-      loadData();
+      if (!confirm('Hapus transaksi ini?')) return;
+
+      try {
+        await apiRequest({
+          method: 'POST',
+          body: { action: 'delete', id: id }
+        });
+        await loadData();
+      } catch (error) {
+        console.error('hapusData error:', error);
+        alert('Gagal menghapus: ' + error.message);
+      }
     }
 
-    // Converter Sidebar Logic
     function toggleSidebar(show) {
       document.getElementById('sidebar').classList.toggle('open', show);
     }
+
     function cEnkrip() {
-      let val = document.getElementById('cAngka').value;
-      if(!val) return;
-      document.getElementById('cHasil').innerText = enkripsiAngka(val);
+      const value = document.getElementById('cAngka').value;
+      if (!value) return;
+      document.getElementById('cHasil').innerText = enkripsiAngka(value);
       document.getElementById('cHasilBox').style.display = 'block';
     }
+
     function cDekrip() {
-      let val = document.getElementById('cKode').value;
-      if(!val) return;
-      let res = dekripsiKode(val);
-      document.getElementById('cHasil').innerText = 'Rp ' + res.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      const value = document.getElementById('cKode').value;
+      if (!value) return;
+      const result = dekripsiKode(value);
+      document.getElementById('cHasil').innerText = 'Rp ' + result.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       document.getElementById('cHasilBox').style.display = 'block';
     }
 
