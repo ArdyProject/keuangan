@@ -1,1 +1,305 @@
-hrhe
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Keuangan Rahasia</title>
+  <style>
+    /* Reset & Theme Termux Base Style (Pure CSS) */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 15px;
+    }
+    a, .btn-link { color: #58a6ff; text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; }
+    
+    .header { text-align: center; margin-bottom: 20px; }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    /* Layout Grid Murni */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+    @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
+
+    /* Form Input */
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; margin-bottom: 4px; color: #8b949e; font-size: 12px; }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #f0f6fc;
+      font-family: inherit;
+      border-radius: 4px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid #2ea043;
+      color: #3fb950;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover { background: #2ea043; color: #fff; }
+
+    /* Tabel Status */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { border-bottom: 1px solid #30363d; padding: 8px; font-size: 13px; }
+    th { color: #8b949e; }
+    
+    /* Utility */
+    .badge { padding: 2px 6px; border-radius: 4px; border: 1px solid #30363d; background: #000; display: inline-block; }
+    .text-in { color: #3fb950; font-weight: bold; }
+    .text-out { color: #f85149; font-weight: bold; }
+    .text-info { color: #58a6ff; }
+    
+    /* Sidebar Converter Offcanvas */
+    .sidebar {
+      position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%;
+      background: #000; border-left: 2px solid #2ea043; z-index: 1000; transition: right 0.3s ease;
+      padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); overflow-y: auto;
+    }
+    .sidebar.open { right: 0; }
+    .fab {
+      position: fixed; bottom: 20px; right: 20px; background: #000; color: #3fb950;
+      border: 1px solid #3fb950; padding: 12px 20px; border-radius: 30px; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,255,0,0.2); font-family: inherit; z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Button -->
+  <button class="fab" onclick="toggleSidebar(true)">>_ CONVERTER</button>
+
+  <div class="header">
+    <h3 class="text-info">~ $ ./dashboard_sheets.sh</h3>
+    <div class="card" style="margin-top: 10px;">
+      <span style="color:#8b949e; font-size: 12px;">TOTAL SALDO AKTIF</span>
+      <h2 id="totalSaldo" class="text-info" style="margin-top: 5px;">LOAD...</h2>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Form Input -->
+    <div class="card">
+      <div style="color:#3fb950; margin-bottom: 10px;">$ Tambah_Transaksi</div>
+      <form id="formTransaksi" onsubmit="tambahData(event)">
+        <div class="form-group">
+          <label>Tanggal</label>
+          <input type="date" id="tgl" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Jenis Transaksi</label>
+          <select id="jenis" class="form-control" required>
+            <option value="+">[+] Pemasukan</option>
+            <option value="-">[-] Pengeluaran</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nominal (Rp)</label>
+          <input type="number" id="nominal" class="form-control" placeholder="150000" required>
+        </div>
+        <div class="form-group">
+          <label>Keterangan</label>
+          <input type="text" id="keterangan" class="form-control" placeholder="Gaji / Makan" required autocomplete="off">
+        </div>
+        <button type="submit" id="btnSubmit" class="btn">Simpan ke Sheets</button>
+      </form>
+    </div>
+
+    <!-- Tabel Log -->
+    <div class="card">
+      <div style="color:#3fb950; margin-bottom: 10px;">$ Log_Keuangan</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Tgl</th>
+              <th>Ket</th>
+              <th>+/-</th>
+              <th>Nilai Kode</th>
+              <th>Saldo</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tabelBody">
+            <tr><td colspan="6" style="text-align: center; color: #8b949e;">Mengambil data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Converter Converter -->
+  <div id="sidebar" class="sidebar">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+      <span style="color:#3fb950;">~ $ /converter.sh</span>
+      <button class="btn-link" onclick="toggleSidebar(false)">[X] Tutup</button>
+    </div>
+    <div style="font-size: 12px; color: #58a6ff; margin-bottom: 15px;">
+      a=0 b=1 c=2 d=3 e=4 f=5 g=6 h=7 i=8 j=9<br>Rule: 000 = A³, 1111 = B⁴
+    </div>
+    <div class="form-group">
+      <label>Nominal Angka (Rp):</label>
+      <input type="number" id="cAngka" class="form-control" placeholder="150000">
+      <button class="btn-link" onclick="cEnkrip()" style="margin-top: 5px;">[Enter] Enkripsi</button>
+    </div>
+    <div class="form-group" style="margin-top: 20px;">
+      <label>Kode Rahasia:</label>
+      <input type="text" id="cKode" class="form-control" placeholder="B.F⁵">
+      <button class="btn-link" onclick="cDekrip()" style="margin-top: 5px;">[Enter] Dekripsi</button>
+    </div>
+    <div id="cHasilBox" style="display:none; margin-top: 20px; padding: 10px; border: 1px solid #3fb950;">
+      <span style="color:#3fb950;">Hasil:</span>
+      <div id="cHasil" style="font-size: 16px; font-weight: bold; margin: 5px 0;"></div>
+    </div>
+  </div>
+
+  <script>
+    // MASUKKAN URL GOOGLE APPS SCRIPT KAMU DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycby5GyywX-axMhZ9JJInC97HwLfCGpU2XCR128ROEWP5rdEypvWdNgT6R_GGUGf7eCFJfg/exec";
+
+    const kodeAngka = {'0':'a','1':'b','2':'c','3':'d','4':'e','5':'f','6':'g','7':'h','8':'i','9':'j'};
+    const kodeHuruf = {'a':'0','b':'1','c':'2','d':'3','e':'4','f':'5','g':'6','h':'7','i':'8','j':'9'};
+    const superToNum = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
+    const numToSuper = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+
+    document.getElementById('tgl').valueAsDate = new Date();
+
+    function enkripsiAngka(angka) {
+      let str = angka.toString().replace(/[^0-9]/g, '');
+      if (!str) return '0';
+      let kode = str.split('').map(d => kodeAngka[d]).join('');
+      let hasil = ''; let count = 1;
+      for(let i=0; i<kode.length; i++){
+        if(kode[i] === kode[i+1]){ count++; }
+        else {
+          hasil += kode[i].toUpperCase();
+          if(count > 1) {
+            let cStr = count.toString();
+            for(let j=0; j<cStr.length; j++) hasil += numToSuper[cStr[j]];
+          }
+          count = 1;
+        }
+      }
+      return hasil.replace(/(.{1,3})/g, '$1.').replace(/\.$/, '');
+    }
+
+    function dekripsiKode(kode) {
+      kode = kode.toLowerCase().replace(/\./g, '');
+      let angka = '';
+      for(let i=0; i<kode.length; i++){
+        let huruf = kode[i];
+        if(!kodeHuruf[huruf]) continue;
+        let jumlah = 1;
+        let nextChar = kode[i+1];
+        if(superToNum[nextChar] !== undefined){
+          jumlah = parseInt(superToNum[nextChar]);
+          i++;
+        }
+        angka += kodeHuruf[huruf].repeat(jumlah);
+      }
+      return angka;
+    }
+
+    async function loadData() {
+      try {
+        let res = await fetch(API_URL);
+        let data = await res.json();
+        
+        // Sort tanggal ascending untuk kalkulasi saldo
+        data.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+        let saldo = 0;
+        let html = '';
+        
+        // Hitung Saldo & Susun Tampilan
+        let dataRender = data.map(item => {
+          let nom = parseInt(item.nominal) || 0;
+          if(item.jenis === '+') saldo += nom;
+          else saldo -= nom;
+          return { ...item, saldoBerjalan: saldo };
+        }).reverse(); // Balik agar transaksi baru di atas
+
+        document.getElementById('totalSaldo').innerText = enkripsiAngka(Math.abs(saldo)) + (saldo < 0 ? " (MINUS)" : "");
+
+        if(dataRender.length === 0) {
+          html = '<tr><td colspan="6" style="text-align: center; color: #8b949e;">Belum ada data.</td></tr>';
+        } else {
+          dataRender.forEach(item => {
+            html += `<tr>
+              <td style="color:#8b949e">${item.tanggal.substring(2)}</td>
+              <td>${item.keterangan}</td>
+              <td class="${item.jenis === '+' ? 'text-in' : 'text-out'}">${item.jenis === '+' ? '[IN]' : '[OUT]'}</td>
+              <td><span class="badge ${item.jenis === '+' ? 'text-in' : 'text-out'}">${enkripsiAngka(item.nominal)}</span></td>
+              <td><span class="badge text-info">${enkripsiAngka(Math.abs(item.saldoBerjalan))}</span></td>
+              <td><button class="btn-link" style="color:#f85149" onclick="hapusData('${item.id}')">Del</button></td>
+            </tr>`;
+          });
+        }
+        document.getElementById('tabelBody').innerHTML = html;
+      } catch(e) {
+        document.getElementById('tabelBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f85149;">Gagal memuat data. Cek API URL.</td></tr>';
+      }
+    }
+
+    async function tambahData(e) {
+      e.preventDefault();
+      let btn = document.getElementById('btnSubmit');
+      btn.innerText = 'Mengirim...'; btn.disabled = true;
+
+      let payload = {
+        action: 'add',
+        tanggal: document.getElementById('tgl').value,
+        jenis: document.getElementById('jenis').value,
+        nominal: document.getElementById('nominal').value,
+        keterangan: document.getElementById('keterangan').value
+      };
+
+      await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      document.getElementById('nominal').value = '';
+      document.getElementById('keterangan').value = '';
+      btn.innerText = 'Simpan ke Sheets'; btn.disabled = false;
+      loadData();
+    }
+
+    async function hapusData(id) {
+      if(!confirm('Hapus transaksi ini?')) return;
+      await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
+      loadData();
+    }
+
+    // Converter Sidebar Logic
+    function toggleSidebar(show) {
+      document.getElementById('sidebar').classList.toggle('open', show);
+    }
+    function cEnkrip() {
+      let val = document.getElementById('cAngka').value;
+      if(!val) return;
+      document.getElementById('cHasil').innerText = enkripsiAngka(val);
+      document.getElementById('cHasilBox').style.display = 'block';
+    }
+    function cDekrip() {
+      let val = document.getElementById('cKode').value;
+      if(!val) return;
+      let res = dekripsiKode(val);
+      document.getElementById('cHasil').innerText = 'Rp ' + res.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      document.getElementById('cHasilBox').style.display = 'block';
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
