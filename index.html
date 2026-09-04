@@ -1,199 +1,353 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Keuangan Rahasia</title>
+  
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background-color: #0d1117;
-      color: #c9d1d9;
-      font-family: 'Courier New', Courier, monospace;
-      padding: 15px;
+      background-color: #f4f6f9;
+      color: #333;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    a, .btn-link {
-      color: #58a6ff;
-      text-decoration: underline;
-      cursor: pointer;
-      background: none;
+
+    /* Styling Card Profesional */
+    .card-dashboard {
       border: none;
-      font-family: inherit;
+      border-radius: 12px;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      background-color: #ffffff;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
     }
-    .header { text-align: center; margin-bottom: 20px; }
-    .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 15px;
-      margin-bottom: 15px;
+    .card-dashboard:hover {
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
     }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-    @media (min-width: 768px) {
-      .grid { grid-template-columns: 1fr 2fr; }
+    
+    .card-header-custom {
+      background-color: #fff;
+      border-bottom: 1px solid #edf2f9;
+      padding: 1.25rem 1.5rem;
+      border-radius: 12px 12px 0 0 !important;
+      font-weight: 600;
+      color: #2c3e50;
     }
-    .form-group { margin-bottom: 12px; }
-    .form-group label {
-      display: block;
-      margin-bottom: 4px;
-      color: #8b949e;
-      font-size: 12px;
+
+    /* Form Styling */
+    .form-label {
+      font-weight: 600;
+      color: #495057;
+      font-size: 0.9rem;
     }
-    .form-control {
-      width: 100%;
-      padding: 8px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      color: #f0f6fc;
-      font-family: inherit;
-      border-radius: 4px;
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
     }
-    .btn {
-      width: 100%;
-      padding: 10px;
-      background: transparent;
-      border: 1px solid #2ea043;
-      color: #3fb950;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: inherit;
+    .form-control:focus, .form-select:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
     }
-    .btn:hover { background: #2ea043; color: #fff; }
-    .btn:disabled { opacity: .6; cursor: wait; }
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { border-bottom: 1px solid #30363d; padding: 8px; font-size: 13px; }
-    th { color: #8b949e; }
+
+    /* Button Styling */
+    .btn-primary {
+      border-radius: 8px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 600;
+    }
+
+    /* Table Styling */
+    .table-custom th {
+      background-color: #f8f9fa;
+      color: #6c757d;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #dee2e6;
+    }
+    .table-custom td {
+      vertical-align: middle;
+      font-size: 0.95rem;
+      color: #495057;
+    }
     .badge {
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #30363d;
-      background: #000;
-      display: inline-block;
+      padding: 0.4em 0.8em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
     }
-    .text-in { color: #3fb950; font-weight: bold; }
-    .text-out { color: #f85149; font-weight: bold; }
-    .text-info { color: #58a6ff; }
-    .sidebar {
+
+    /* Custom Sidebar Kanan (Setengah Layar) */
+    .sidebar-custom {
       position: fixed;
       top: 0;
       right: -100%;
       width: 100%;
-      max-width: 400px;
-      height: 100%;
-      background: #000;
-      border-left: 2px solid #2ea043;
-      z-index: 1000;
-      transition: right 0.3s ease;
-      padding: 20px;
-      box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+      height: 100vh;
+      background: #ffffff;
+      z-index: 1050;
+      transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: -5px 0 25px rgba(0,0,0,0.15);
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
-    .sidebar.open { right: 0; }
+    
+    @media (min-width: 992px) {
+      .sidebar-custom {
+        width: 50vw;
+        right: -50vw;
+      }
+    }
+    
+    .sidebar-custom.open {
+      right: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #edf2f9;
+      background-color: #f8f9fa;
+    }
+    .sidebar-body {
+      padding: 2rem;
+    }
+
+    /* Floating Action Button */
     .fab {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #000;
-      color: #3fb950;
-      border: 1px solid #3fb950;
-      padding: 12px 20px;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,255,0,0.2);
-      font-family: inherit;
-      z-index: 999;
+      bottom: 30px;
+      right: 30px;
+      background-color: #0d6efd;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+      z-index: 1040;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
+      color: #fff;
+    }
+
+    .sidebar-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.4);
+      z-index: 1045;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar-backdrop.show {
+      opacity: 1;
+      visibility: visible;
     }
   </style>
 </head>
 <body>
-  <button class="fab" onclick="toggleSidebar(true)">>_ CONVERTER</button>
 
-  <div class="header">
-    <h3 class="text-info">~ $ ./dashboard_sheets.sh</h3>
-    <div class="card" style="margin-top: 10px;">
-      <span style="color:#8b949e; font-size: 12px;">TOTAL SALDO AKTIF</span>
-      <h2 id="totalSaldo" class="text-info" style="margin-top: 5px;">LOAD...</h2>
+  <!-- Top Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="navbar-brand fw-bold" href="#">
+        📊 Dashboard Keuangan
+      </a>
+      <!-- Tombol Master Switch Rahasia -->
+      <button id="btnToggleMode" class="btn btn-sm btn-danger fw-bold shadow-sm" onclick="toggleMode()">
+        🔒 Mode Rahasia: ON
+      </button>
+    </div>
+  </nav>
+
+  <div class="container pb-5">
+    
+    <!-- Widget Total & Sisa Akhir -->
+    <div class="row g-3 justify-content-center mb-4">
+      <div class="col-12 col-md-4">
+        <div class="card card-dashboard text-center border-start border-success border-4">
+          <div class="card-body py-3">
+            <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size: 0.75rem;">Total Pemasukan</h6>
+            <h3 id="totalMasuk" class="text-success fw-bold mb-0">...</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card card-dashboard text-center border-start border-danger border-4">
+          <div class="card-body py-3">
+            <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size: 0.75rem;">Total Pengeluaran</h6>
+            <h3 id="totalKeluar" class="text-danger fw-bold mb-0">...</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card card-dashboard text-center border-start border-primary border-4">
+          <div class="card-body py-3">
+            <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size: 0.75rem;">Sisa Akhir (Saldo)</h6>
+            <h3 id="totalSisa" class="text-primary fw-bold mb-0">...</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+      
+      <!-- Kolom Kiri: Form Input -->
+      <div class="col-12 col-lg-4">
+        <div class="card card-dashboard h-100">
+          <div class="card-header-custom d-flex align-items-center">
+            <span class="text-primary me-2">➕</span> Tambah Transaksi
+          </div>
+          <div class="card-body p-4">
+            <form id="formTransaksi" onsubmit="tambahData(event)">
+              <div class="mb-3">
+                <label for="tgl" class="form-label">Tanggal</label>
+                <input type="date" id="tgl" class="form-control" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="jenis" class="form-label">Jenis Transaksi</label>
+                <select id="jenis" class="form-select" required>
+                  <option value="+">Pemasukan (+)</option>
+                  <option value="-">Pengeluaran (-)</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="nominal" class="form-label">Nominal</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">Rp</span>
+                  <input type="number" id="nominal" class="form-control" placeholder="Contoh: 150000" min="1" step="1" required>
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <label for="keterangan" class="form-label">Keterangan</label>
+                <input type="text" id="keterangan" class="form-control" placeholder="Contoh: Gaji / Makan" required autocomplete="off">
+              </div>
+              
+              <button type="submit" id="btnSubmit" class="btn btn-primary w-100 py-2">
+                Simpan Transaksi
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kolom Kanan: Tabel Riwayat -->
+      <div class="col-12 col-lg-8">
+        <div class="card card-dashboard h-100">
+          <div class="card-header-custom d-flex align-items-center justify-content-between">
+            <div>
+              <span class="text-primary me-2">📋</span> Riwayat Keuangan
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="fetchDataDariServer()">Muat Ulang</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th class="ps-4">Tanggal</th>
+                    <th>Keterangan</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Nominal</th>
+                    <th class="text-center">Sisa Saldo</th>
+                    <th class="text-end pe-4">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelBody">
+                  <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                      <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                      Mengambil data dari server...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <div style="color:#3fb950; margin-bottom: 10px;">$ Tambah_Transaksi</div>
-      <form id="formTransaksi" onsubmit="tambahData(event)">
-        <div class="form-group">
-          <label for="tgl">Tanggal</label>
-          <input type="date" id="tgl" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label for="jenis">Jenis Transaksi</label>
-          <select id="jenis" class="form-control" required>
-            <option value="+">[+] Pemasukan</option>
-            <option value="-">[-] Pengeluaran</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="nominal">Nominal (Rp)</label>
-          <input type="number" id="nominal" class="form-control" placeholder="150000" min="1" step="1" required>
-        </div>
-        <div class="form-group">
-          <label for="keterangan">Keterangan</label>
-          <input type="text" id="keterangan" class="form-control" placeholder="Gaji / Makan" required autocomplete="off">
-        </div>
-        <button type="submit" id="btnSubmit" class="btn">Simpan ke Sheets</button>
-      </form>
-    </div>
+  <!-- Tombol FAB untuk Konverter -->
+  <button class="fab" onclick="toggleSidebar(true)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-lock" viewBox="0 0 16 16">
+      <path d="M5.338 1.59a59.768 59.768 0 0 0-2.834.856 1.528 1.528 0 0 0-1.037 1.41C1.351 4.14 1 8.52 4.13 11.412c1.94 1.806 5.313 2.536 7.618 3.036 1.15.252 2.383-.34 2.875-1.42.545-1.196.848-3.415.748-6.177a1.528 1.528 0 0 0-1.037-1.41 60.106 60.106 0 0 0-2.834-.856C9.691 1.25 8.5 1 8 1s-1.691.25-3.338.59zm.924-1.229C7.458.113 8 0 8 0s.542.113 1.738.361c1.554.323 3.325.761 4.492 1.144.757.248 1.282.915 1.349 1.716.1 1.218.428 3.864-.284 6.13-.573 1.835-2.039 3.01-4.225 3.528-2.61.623-6.22 1.077-8.156-1.085-1.92-2.144-2.124-5.28-2.222-6.526-.067-.8.459-1.468 1.216-1.716C3.127 1.122 4.898.684 6.452.361a59.85 59.85 0 0 1 2.827-.584"/>
+      <path d="M8 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 1a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10"/>
+    </svg>
+    Buka Konverter
+  </button>
 
-    <div class="card">
-      <div style="color:#3fb950; margin-bottom: 10px;">$ Log_Keuangan</div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Tgl</th>
-              <th>Ket</th>
-              <th>+/-</th>
-              <th>Nilai Kode</th>
-              <th>Saldo</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tabelBody">
-            <tr><td colspan="6" style="text-align: center; color: #8b949e;">Mengambil data...</td></tr>
-          </tbody>
-        </table>
+  <!-- Backdrop -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
+  <!-- Sidebar Konverter -->
+  <div id="sidebar" class="sidebar-custom">
+    <div class="sidebar-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-bold text-primary">🛡️ Alat Enkripsi Manual</h5>
+      <button type="button" class="btn-close" aria-label="Close" onclick="toggleSidebar(false)"></button>
+    </div>
+    
+    <div class="sidebar-body">
+      <div class="alert alert-secondary border-0 shadow-sm mb-4" role="alert">
+        <h6 class="alert-heading fw-bold">Panduan Sandi</h6>
+        <p class="mb-0 small">
+          a=0, b=1, c=2, d=3, e=4, f=5, g=6, h=7, i=8, j=9<br>
+          <em>Aturan Pangkat: 000 = A³, 1111 = B⁴</em>
+        </p>
+      </div>
+      
+      <div class="card card-dashboard mb-4 border border-primary-subtle">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3 text-primary">Ubah Angka 👉 Kode</h6>
+          <label for="cAngka" class="form-label small">Nominal Asli (Rp):</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-light">Rp</span>
+            <input type="number" id="cAngka" class="form-control" placeholder="150000">
+          </div>
+          <button class="btn btn-primary w-100" onclick="cEnkrip()">Enkripsi</button>
+        </div>
+      </div>
+      
+      <div class="card card-dashboard mb-4 border border-success-subtle">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3 text-success">Ubah Kode 👉 Angka</h6>
+          <label for="cKode" class="form-label small">Kode Rahasia:</label>
+          <input type="text" id="cKode" class="form-control mb-3" placeholder="B.F⁵">
+          <button class="btn btn-success w-100" onclick="cDekrip()">Dekripsi</button>
+        </div>
+      </div>
+      
+      <div id="cHasilBox" class="alert alert-dark text-center mt-3" style="display:none;">
+        <span class="d-block small text-muted mb-1 fw-bold">Hasil:</span>
+        <h3 id="cHasil" class="mb-0 fw-bold text-dark"></h3>
       </div>
     </div>
   </div>
 
-  <div id="sidebar" class="sidebar">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-      <span style="color:#3fb950;">~ $ /converter.sh</span>
-      <button class="btn-link" onclick="toggleSidebar(false)">[X] Tutup</button>
-    </div>
-    <div style="font-size: 12px; color: #58a6ff; margin-bottom: 15px;">
-      a=0 b=1 c=2 d=3 e=4 f=5 g=6 h=7 i=8 j=9<br>
-      Rule: 000 = A³, 1111 = B⁴
-    </div>
-    <div class="form-group">
-      <label for="cAngka">Nominal Angka (Rp):</label>
-      <input type="number" id="cAngka" class="form-control" placeholder="150000">
-      <button class="btn-link" onclick="cEnkrip()" style="margin-top: 5px;">[Enter] Enkripsi</button>
-    </div>
-    <div class="form-group" style="margin-top: 20px;">
-      <label for="cKode">Kode Rahasia:</label>
-      <input type="text" id="cKode" class="form-control" placeholder="B.F⁵">
-      <button class="btn-link" onclick="cDekrip()" style="margin-top: 5px;">[Enter] Dekripsi</button>
-    </div>
-    <div id="cHasilBox" style="display:none; margin-top: 20px; padding: 10px; border: 1px solid #3fb950;">
-      <span style="color:#3fb950;">Hasil:</span>
-      <div id="cHasil" style="font-size: 16px; font-weight: bold; margin: 5px 0;"></div>
-    </div>
-  </div>
-
   <script>
-    // Ganti dengan URL deployment Apps Script yang berakhiran /exec.
     const API_URL = 'https://script.google.com/macros/s/AKfycbyC3wepIea0VDfmSKJZOtrOKWRbiBAaKNObbhAshvKZZRbupcm3NIo3t6RyeJ-YX3F32A/exec';
 
     const kodeAngka = {'0':'a','1':'b','2':'c','3':'d','4':'e','5':'f','6':'g','7':'h','8':'i','9':'j'};
@@ -201,8 +355,39 @@
     const superToNum = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
     const numToSuper = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 
+    // Global State
+    let isModeRahasia = true; 
+    let globalDataTransaksi = [];
+    let summary = { masuk: 0, keluar: 0, sisa: 0 };
+
     document.getElementById('tgl').value = new Date().toISOString().slice(0, 10);
 
+    // --- FUNGSI FORMATTING ---
+    function formatUang(angka) {
+      if (isModeRahasia) {
+        return enkripsiAngka(angka);
+      } else {
+        return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      }
+    }
+
+    function toggleMode() {
+      isModeRahasia = !isModeRahasia;
+      const btn = document.getElementById('btnToggleMode');
+      
+      if (isModeRahasia) {
+        btn.innerHTML = '🔒 Mode Rahasia: ON';
+        btn.className = 'btn btn-sm btn-danger fw-bold shadow-sm';
+      } else {
+        btn.innerHTML = '👁️ Mode Terbuka: OFF';
+        btn.className = 'btn btn-sm btn-success fw-bold shadow-sm';
+      }
+      
+      // Render ulang tampilan agar angka berubah
+      renderDashboard();
+    }
+
+    // --- LOGIKA ENKRIPSI/DEKRIPSI ---
     function enkripsiAngka(angka) {
       let str = String(angka ?? '').replace(/[^0-9]/g, '');
       if (!str) return '0';
@@ -270,11 +455,10 @@
       }[char]));
     }
 
+    // --- API & DATA ---
     async function apiRequest(options = {}) {
       const response = await fetch(API_URL, {
         method: options.method || 'GET',
-        // Jangan menambahkan Content-Type application/json agar tidak memicu
-        // preflight CORS pada hosting tertentu.
         body: options.body ? JSON.stringify(options.body) : undefined,
         cache: 'no-store'
       });
@@ -284,7 +468,7 @@
       try {
         result = JSON.parse(text);
       } catch (_) {
-        throw new Error('API tidak mengembalikan JSON. Pastikan URL memakai /exec dan akses deployment adalah Anyone.');
+        throw new Error('API tidak mengembalikan JSON. Pastikan URL menggunakan /exec.');
       }
 
       if (!response.ok || (result && result.status === 'error')) {
@@ -293,67 +477,106 @@
       return result;
     }
 
-    async function loadData() {
+    async function fetchDataDariServer() {
       const body = document.getElementById('tabelBody');
+      body.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Mengambil data...</td></tr>`;
+      
       try {
         const result = await apiRequest();
         if (!Array.isArray(result)) {
           throw new Error(result.message || 'Format data API tidak valid.');
         }
 
+        // Urutkan berdasarkan tanggal & ID
         result.sort((a, b) => {
           const dateCompare = String(a.tanggal ?? '').localeCompare(String(b.tanggal ?? ''));
           return dateCompare || String(a.id ?? '').localeCompare(String(b.id ?? ''));
         });
 
-        let saldo = 0;
-        const dataRender = result.map(item => {
+        // Hitung akumulasi & sisa akhir
+        let saldoBerjalan = 0;
+        summary = { masuk: 0, keluar: 0, sisa: 0 };
+
+        globalDataTransaksi = result.map(item => {
           const jenis = normalizeJenisClient(item.jenis);
           const nominal = parseNominalClient(item.nominal);
 
-          // Hanya '-' yang mengurangi saldo.
-          if (jenis === '+') saldo += nominal;
-          if (jenis === '-') saldo -= nominal;
+          if (jenis === '+') {
+            saldoBerjalan += nominal;
+            summary.masuk += nominal;
+          }
+          if (jenis === '-') {
+            saldoBerjalan -= nominal;
+            summary.keluar += nominal;
+          }
 
-          return { ...item, jenis, nominal, saldoBerjalan: saldo };
-        }).reverse();
+          return { ...item, jenis, nominal, saldoSaatIni: saldoBerjalan };
+        }).reverse(); // Dibalik agar yang terbaru di atas
 
-        document.getElementById('totalSaldo').innerText =
-          enkripsiAngka(Math.abs(saldo)) + (saldo < 0 ? ' (MINUS)' : '');
-
-        if (!dataRender.length) {
-          body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8b949e">Belum ada data.</td></tr>';
-          return;
-        }
-
-        body.innerHTML = dataRender.map(item => `
-          <tr>
-            <td style="color:#8b949e">${escapeHtml(String(item.tanggal ?? '').substring(2))}</td>
-            <td>${escapeHtml(item.keterangan)}</td>
-            <td class="${item.jenis === '+' ? 'text-in' : 'text-out'}">
-              ${item.jenis === '+' ? '[IN]' : item.jenis === '-' ? '[OUT]' : '[?]'}
-            </td>
-            <td><span class="badge ${item.jenis === '+' ? 'text-in' : 'text-out'}">${enkripsiAngka(item.nominal)}</span></td>
-            <td><span class="badge text-info">${enkripsiAngka(Math.abs(item.saldoBerjalan))}</span></td>
-            <td>
-              <button class="btn-link" style="color:#f85149" data-id="${escapeHtml(item.id)}">Del</button>
-            </td>
-          </tr>
-        `).join('');
-
-        body.querySelectorAll('button[data-id]').forEach(button => {
-          button.addEventListener('click', () => hapusData(button.dataset.id));
-        });
+        summary.sisa = saldoBerjalan;
+        
+        renderDashboard(); // Render ke HTML
+        
       } catch (error) {
-        console.error('loadData error:', error);
-        body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f85149">${escapeHtml(error.message)}</td></tr>`;
+        console.error('Fetch error:', error);
+        body.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">${escapeHtml(error.message)}</td></tr>`;
       }
     }
 
+    function renderDashboard() {
+      // 1. Render Widget Atas (Gunakan formatUang yang terikat pada Mode Rahasia)
+      document.getElementById('totalMasuk').innerText = formatUang(summary.masuk);
+      document.getElementById('totalKeluar').innerText = formatUang(summary.keluar);
+      
+      const elSisa = document.getElementById('totalSisa');
+      elSisa.innerText = formatUang(Math.abs(summary.sisa)) + (summary.sisa < 0 ? ' (Minus)' : '');
+      elSisa.className = summary.sisa < 0 ? 'text-danger fw-bold mb-0' : 'text-primary fw-bold mb-0';
+
+      // 2. Render Tabel
+      const body = document.getElementById('tabelBody');
+      if (!globalDataTransaksi.length) {
+        body.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada data transaksi.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = globalDataTransaksi.map(item => `
+        <tr>
+          <td class="ps-4 text-muted small">${escapeHtml(String(item.tanggal ?? '').substring(2))}</td>
+          <td class="fw-medium">${escapeHtml(item.keterangan)}</td>
+          <td class="text-center">
+            <span class="badge ${item.jenis === '+' ? 'text-bg-success' : 'text-bg-danger'}">
+              ${item.jenis === '+' ? 'MASUK' : item.jenis === '-' ? 'KELUAR' : '?'}
+            </span>
+          </td>
+          <td class="text-center">
+            <span class="badge bg-light text-dark border border-secondary-subtle">
+              ${formatUang(item.nominal)}
+            </span>
+          </td>
+          <td class="text-center">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+              ${formatUang(Math.abs(item.saldoSaatIni))}
+            </span>
+          </td>
+          <td class="text-end pe-4">
+            <button class="btn btn-sm btn-outline-danger py-1 px-2" data-id="${escapeHtml(item.id)}" title="Hapus">
+              Hapus
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Event Listener Hapus
+      body.querySelectorAll('button[data-id]').forEach(button => {
+        button.addEventListener('click', () => hapusData(button.dataset.id));
+      });
+    }
+
+    // --- AKSI FORM ---
     async function tambahData(event) {
       event.preventDefault();
       const button = document.getElementById('btnSubmit');
-      button.innerText = 'Mengirim...';
+      button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menyimpan...';
       button.disabled = true;
 
       try {
@@ -370,33 +593,45 @@
 
         document.getElementById('nominal').value = '';
         document.getElementById('keterangan').value = '';
-        await loadData();
+        await fetchDataDariServer(); // Reload data
       } catch (error) {
         console.error('tambahData error:', error);
         alert('Gagal menyimpan: ' + error.message);
       } finally {
-        button.innerText = 'Simpan ke Sheets';
+        button.innerHTML = 'Simpan Transaksi';
         button.disabled = false;
       }
     }
 
     async function hapusData(id) {
-      if (!confirm('Hapus transaksi ini?')) return;
+      if (!confirm('Yakin ingin menghapus transaksi ini?')) return;
 
       try {
         await apiRequest({
           method: 'POST',
           body: { action: 'delete', id: id }
         });
-        await loadData();
+        await fetchDataDariServer();
       } catch (error) {
         console.error('hapusData error:', error);
         alert('Gagal menghapus: ' + error.message);
       }
     }
 
+    // --- SIDEBAR UI ---
     function toggleSidebar(show) {
-      document.getElementById('sidebar').classList.toggle('open', show);
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      
+      if (show) {
+        sidebar.classList.add('open');
+        backdrop.classList.add('show');
+        document.body.style.overflow = 'hidden'; 
+      } else {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+        document.body.style.overflow = '';
+      }
     }
 
     function cEnkrip() {
@@ -414,7 +649,8 @@
       document.getElementById('cHasilBox').style.display = 'block';
     }
 
-    loadData();
+    // Load data awal
+    fetchDataDariServer();
   </script>
 </body>
 </html>
