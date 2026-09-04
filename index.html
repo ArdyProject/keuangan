@@ -62,7 +62,7 @@
       font-weight: 600;
     }
 
-    /* Table Styling */
+    /* Table & Pagination Styling */
     .table-custom th {
       background-color: #f8f9fa;
       color: #6c757d;
@@ -82,6 +82,24 @@
       border-radius: 6px;
       font-weight: 600;
       font-size: 0.8rem;
+    }
+    .pagination {
+      margin-bottom: 0;
+    }
+    .page-link {
+      color: #0d6efd;
+      border: 1px solid #dee2e6;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.9rem;
+    }
+    .page-link:hover {
+      background-color: #e9ecef;
+      color: #0a58ca;
+    }
+    .page-item.active .page-link {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+      color: #fff;
     }
 
     /* Custom Sidebar Kanan (Setengah Layar) */
@@ -261,7 +279,7 @@
             </div>
             <button class="btn btn-sm btn-outline-secondary" onclick="fetchDataDariServer()">Muat Ulang</button>
           </div>
-          <div class="card-body p-0">
+          <div class="card-body p-0 d-flex flex-column justify-content-between h-100">
             <div class="table-responsive">
               <table class="table table-hover table-custom mb-0">
                 <thead>
@@ -283,6 +301,10 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <!-- Wrapper untuk Pagination -->
+            <div id="paginationWrapper" class="d-flex justify-content-center py-3 border-top">
+              <!-- Tombol Paginasi akan dimuat di sini oleh JS -->
             </div>
           </div>
         </div>
@@ -359,6 +381,10 @@
     let isModeRahasia = true; 
     let globalDataTransaksi = [];
     let summary = { masuk: 0, keluar: 0, sisa: 0 };
+    
+    // Pagination State
+    let currentPage = 1;
+    const rowsPerPage = 10;
 
     document.getElementById('tgl').value = new Date().toISOString().slice(0, 10);
 
@@ -383,11 +409,9 @@
         btn.className = 'btn btn-sm btn-success fw-bold shadow-sm';
       }
       
-      // Render ulang tampilan agar angka berubah
       renderDashboard();
     }
 
-    // --- LOGIKA ENKRIPSI/DEKRIPSI ---
     function enkripsiAngka(angka) {
       let str = String(angka ?? '').replace(/[^0-9]/g, '');
       if (!str) return '0';
@@ -479,21 +503,22 @@
 
     async function fetchDataDariServer() {
       const body = document.getElementById('tabelBody');
-      body.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Mengambil data...</td></tr>`;
+      const pagWrapper = document.getElementById('paginationWrapper');
       
+      body.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Mengambil data...</td></tr>`;
+      pagWrapper.innerHTML = ''; // Hilangkan paginasi saat loading
+
       try {
         const result = await apiRequest();
         if (!Array.isArray(result)) {
           throw new Error(result.message || 'Format data API tidak valid.');
         }
 
-        // Urutkan berdasarkan tanggal & ID
         result.sort((a, b) => {
           const dateCompare = String(a.tanggal ?? '').localeCompare(String(b.tanggal ?? ''));
           return dateCompare || String(a.id ?? '').localeCompare(String(b.id ?? ''));
         });
 
-        // Hitung akumulasi & sisa akhir
         let saldoBerjalan = 0;
         summary = { masuk: 0, keluar: 0, sisa: 0 };
 
@@ -511,11 +536,14 @@
           }
 
           return { ...item, jenis, nominal, saldoSaatIni: saldoBerjalan };
-        }).reverse(); // Dibalik agar yang terbaru di atas
+        }).reverse(); 
 
         summary.sisa = saldoBerjalan;
         
-        renderDashboard(); // Render ke HTML
+        // Reset ke halaman pertama setiap kali data dimuat ulang dari server
+        currentPage = 1; 
+        
+        renderDashboard(); 
         
       } catch (error) {
         console.error('Fetch error:', error);
@@ -523,8 +551,14 @@
       }
     }
 
+    // --- FUNGSI GANTI HALAMAN ---
+    function changePage(page) {
+      currentPage = page;
+      renderDashboard(); // Render ulang tabel & widget
+    }
+
     function renderDashboard() {
-      // 1. Render Widget Atas (Gunakan formatUang yang terikat pada Mode Rahasia)
+      // 1. Render Widget Atas
       document.getElementById('totalMasuk').innerText = formatUang(summary.masuk);
       document.getElementById('totalKeluar').innerText = formatUang(summary.keluar);
       
@@ -532,14 +566,29 @@
       elSisa.innerText = formatUang(Math.abs(summary.sisa)) + (summary.sisa < 0 ? ' (Minus)' : '');
       elSisa.className = summary.sisa < 0 ? 'text-danger fw-bold mb-0' : 'text-primary fw-bold mb-0';
 
-      // 2. Render Tabel
+      // 2. Setup Data untuk Halaman Saat Ini
       const body = document.getElementById('tabelBody');
+      const pagWrapper = document.getElementById('paginationWrapper');
+      
       if (!globalDataTransaksi.length) {
         body.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada data transaksi.</td></tr>';
+        pagWrapper.innerHTML = '';
         return;
       }
 
-      body.innerHTML = globalDataTransaksi.map(item => `
+      const totalPages = Math.ceil(globalDataTransaksi.length / rowsPerPage);
+      
+      // Amankan currentPage (Jaga-jaga jika diluar batas saat hapus data)
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      // Slice array data sesuai paginasi
+      const startIndex = (currentPage - 1) * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const currentData = globalDataTransaksi.slice(startIndex, endIndex);
+
+      // 3. Render Tabel sesuai potongan data
+      body.innerHTML = currentData.map(item => `
         <tr>
           <td class="ps-4 text-muted small">${escapeHtml(String(item.tanggal ?? '').substring(2))}</td>
           <td class="fw-medium">${escapeHtml(item.keterangan)}</td>
@@ -566,10 +615,56 @@
         </tr>
       `).join('');
 
-      // Event Listener Hapus
+      // Event Listener Hapus untuk baris yang aktif dirender saja
       body.querySelectorAll('button[data-id]').forEach(button => {
         button.addEventListener('click', () => hapusData(button.dataset.id));
       });
+
+      // 4. Render Tombol Paginasi jika lebih dari 1 halaman
+      if (totalPages > 1) {
+        let pagHtml = `<ul class="pagination pagination-sm m-0 shadow-sm">`;
+        
+        // Tombol Prev
+        pagHtml += `
+          <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <button class="page-link" onclick="changePage(${currentPage - 1})">« Sebelumnya</button>
+          </li>
+        `;
+
+        // Logika angka halaman: Batasi angka yang muncul agar tidak kepanjangan di HP
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        // Pastikan selalu ada 5 kotak jika memungkinkan
+        if (endPage - startPage < 4) {
+          if (startPage === 1) {
+            endPage = Math.min(totalPages, startPage + 4);
+          } else if (endPage === totalPages) {
+            startPage = Math.max(1, endPage - 4);
+          }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          pagHtml += `
+            <li class="page-item ${currentPage === i ? 'active' : ''}">
+              <button class="page-link fw-bold" onclick="changePage(${i})">${i}</button>
+            </li>
+          `;
+        }
+
+        // Tombol Next
+        pagHtml += `
+          <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <button class="page-link" onclick="changePage(${currentPage + 1})">Selanjutnya »</button>
+          </li>
+        `;
+        
+        pagHtml += `</ul>`;
+        pagWrapper.innerHTML = pagHtml;
+      } else {
+        // Kosongkan pembungkus jika tidak ada halaman lain
+        pagWrapper.innerHTML = '';
+      }
     }
 
     // --- AKSI FORM ---
@@ -593,7 +688,7 @@
 
         document.getElementById('nominal').value = '';
         document.getElementById('keterangan').value = '';
-        await fetchDataDariServer(); // Reload data
+        await fetchDataDariServer(); // Reload data dan kembali ke halaman 1
       } catch (error) {
         console.error('tambahData error:', error);
         alert('Gagal menyimpan: ' + error.message);
