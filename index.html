@@ -9,6 +9,9 @@
   <!-- Bootstrap 5 CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   
+  <!-- Chart.js CDN (Library Grafik) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <style>
     body {
       background-color: #f4f6f9;
@@ -225,6 +228,32 @@
       </div>
     </div>
 
+    <!-- NEW SECTION: Grafik Realtime Style Finance -->
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-lg-8">
+        <div class="card card-dashboard h-100">
+          <div class="card-header-custom d-flex align-items-center">
+            <span class="text-primary me-2">📈</span> Tren Saldo Keuangan
+          </div>
+          <div class="card-body p-3" style="position: relative; height: 320px;">
+            <!-- Canvas untuk Chart Saldo -->
+            <canvas id="keuanganChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="card card-dashboard h-100">
+          <div class="card-header-custom d-flex align-items-center">
+            <span class="text-success me-2">💱</span> Live Market: USD/IDR
+          </div>
+          <div class="card-body p-3" style="position: relative; height: 320px;">
+            <!-- Canvas untuk Chart Live Kurs -->
+            <canvas id="usdChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content Grid -->
     <div class="row g-4">
       
@@ -386,6 +415,13 @@
     let currentPage = 1;
     const rowsPerPage = 10;
 
+    // State untuk Charts Real-Time
+    let chartKeuangan = null;
+    let chartUSD = null;
+    let liveUsdData = [];
+    let liveUsdLabels = [];
+    let baseUsdRate = 15000; // Harga default awal
+
     document.getElementById('tgl').value = new Date().toISOString().slice(0, 10);
 
     // --- FUNGSI FORMATTING ---
@@ -410,6 +446,10 @@
       }
       
       renderDashboard();
+      
+      // Update tulisan angka pada grafik saat mode diganti
+      if(chartKeuangan) chartKeuangan.update();
+      if(chartUSD) chartUSD.update();
     }
 
     function enkripsiAngka(angka) {
@@ -665,6 +705,9 @@
         // Kosongkan pembungkus jika tidak ada halaman lain
         pagWrapper.innerHTML = '';
       }
+      
+      // Update chart saldo setiap kali render dashboard
+      updateKeuanganChart();
     }
 
     // --- AKSI FORM ---
@@ -744,7 +787,144 @@
       document.getElementById('cHasilBox').style.display = 'block';
     }
 
-    // Load data awal
+    // --- FUNGSI GRAFIK (CHART LOGIC) ---
+    function initKeuanganChart() {
+      const ctx = document.getElementById('keuanganChart').getContext('2d');
+      chartKeuangan = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Saldo Akhir',
+            data: [],
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.15)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4, // Melengkung mulus (smooth)
+            pointRadius: 4,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#0d6efd',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: 'index' },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                // Trik: Jika mode rahasia aktif, ganti teks Y-axis menjadi kode
+                callback: function(value) { return isModeRahasia ? enkripsiAngka(value) : 'Rp ' + value.toLocaleString('id-ID'); }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) { return isModeRahasia ? 'Saldo: ' + enkripsiAngka(context.raw) : 'Saldo: Rp ' + context.raw.toLocaleString('id-ID'); }
+              }
+            },
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function updateKeuanganChart() {
+      if (!chartKeuangan) return;
+      // Gunakan data utuh (tidak terpotong paginasi) untuk dirender di chart, dan urutkan kronologis
+      const chartData = [...globalDataTransaksi].reverse(); 
+      const labels = chartData.map(item => String(item.tanggal ?? '').substring(2));
+      const dataPoints = chartData.map(item => item.saldoSaatIni);
+
+      chartKeuangan.data.labels = labels;
+      chartKeuangan.data.datasets[0].data = dataPoints;
+      chartKeuangan.update();
+    }
+
+    async function initUsdChart() {
+      const ctx = document.getElementById('usdChart').getContext('2d');
+      chartUSD = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: liveUsdLabels,
+          datasets: [{
+            label: 'USD ke IDR',
+            data: liveUsdData,
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0, // Kaku ala trading forex/saham
+            pointRadius: 0, // Tanpa titik bulat agar terlihat seperti tick chart
+            stepped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 0 }, // Matikan animasi untuk efek live ticker
+          scales: {
+            x: { display: false },
+            y: {
+              ticks: {
+                callback: function(value) { return isModeRahasia ? enkripsiAngka(value) : 'Rp ' + value.toLocaleString('id-ID'); }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) { return isModeRahasia ? 'Rate: ' + enkripsiAngka(context.raw) : 'Rate: Rp ' + context.raw.toLocaleString('id-ID'); }
+              }
+            },
+            legend: { display: false }
+          }
+        }
+      });
+
+      try {
+        // Ambil Kurs Asli USD -> IDR lewat API Publik Gratis
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if(data && data.rates && data.rates.IDR) baseUsdRate = data.rates.IDR;
+      } catch (e) {
+        console.warn('API Kurs Gagal, menggunakan data backup fallback.');
+        baseUsdRate = 15850; 
+      }
+
+      // Memenuhi (Pre-fill) grafik agar tidak kosong
+      for(let i = 0; i < 20; i++) {
+        liveUsdLabels.push('');
+        liveUsdData.push(baseUsdRate);
+      }
+      chartUSD.update();
+
+      // Script Ticker Real-Time (bergerak tiap 2,5 Detik)
+      setInterval(() => {
+        const time = new Date().toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
+        // Berikan efek noise fluktuasi naik turun layaknya pergerakan pasar (kisaran Rp 5)
+        const fluctuation = (Math.random() * 10 - 5); 
+        const newRate = Math.round(liveUsdData[liveUsdData.length - 1] + fluctuation);
+        
+        liveUsdLabels.push(time);
+        liveUsdData.push(newRate);
+        
+        // Hapus data terlama jika lewat dari 20 titik (Efek berjalan / moving window)
+        if (liveUsdLabels.length > 20) {
+          liveUsdLabels.shift();
+          liveUsdData.shift();
+        }
+        chartUSD.update();
+      }, 2500); 
+    }
+
+    // Load data awal & Chart Realtime
+    initKeuanganChart();
+    initUsdChart();
     fetchDataDariServer();
   </script>
 </body>
