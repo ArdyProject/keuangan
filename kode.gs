@@ -1,4 +1,4 @@
-const SPREADSHEET_ID = '1FpTEV2aJyyVtWt30rny_rWvrYni8pE0dIDuHzr8D02w';
+const SPREADSHEET_ID = 'ID_SHEET_KAMU';
 const SHEET_NAME = 'Sheet1';
 
 function getSheet_() {
