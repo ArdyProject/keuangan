@@ -6,4 +6,4 @@ masukan kode gs ke GAS -> deploy baru -> aplikasi web -> salin link project temp
 preview project 
 https://ArdyProject.github.io/Keuangan/
 Website
-ardysihombing.web.id
+https://ardysihombing.web.id
